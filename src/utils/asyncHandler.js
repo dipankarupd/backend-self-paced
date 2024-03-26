@@ -5,7 +5,7 @@ const asyncHandler = (reqHandler) =>
         .catch((err) => next(err))
     }
 
-
+export { asyncHandler }
 
 
 // another method to handle using try and catch:
