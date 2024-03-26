@@ -28,6 +28,6 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 
 // cookie config:
-app.use(cookieParser())
+// app.use(cookieParser())
 
 export {app}
