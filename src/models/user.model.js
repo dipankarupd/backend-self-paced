@@ -22,19 +22,12 @@ const userSchema = new Schema({
         trim: true,
     },
 
-    username: {
-        type: String,
-        required: true,
-        trim: true,
-        index: true     // this will make the searching in db easier
-    },
-
     avatar: {
         type: String,
         required: true
     },
 
-    avatar: {
+    dp: {
         type: String,
     },
 
