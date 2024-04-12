@@ -5,7 +5,37 @@ import { uploadOnCloud } from "../utils/cloudnary.service.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 
 
-// steps to register:
+const generateAccessAndrefreshTokens = async (userId) => {
+    try {
+        
+        // find the user:
+        const user = await User.findById(userId)
+
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        // add the refresh token to the user database
+        user.refreshToken = refreshToken
+
+        // only refresh token is added
+        // if we save then validation will again go
+        // we have not added passwords and other field here so may go wrong
+        // to prevent that use validateBeforeSave 
+        await user.save({
+            validateBeforeSave: false
+        })
+
+        return { accessToken, refreshToken }
+
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong")
+    }
+}
+
+
+const registerUser = asyncHandler( async (req, res) => {
+   
+    // steps to register:
     // get the credentials from the form frontend
     // validation   -> not null
     // already exist? -> email and username uniqueness
@@ -15,9 +45,9 @@ import { ApiResponse } from "../utils/apiResponse.js"
     // check for user creation
     // remove the password and refresh token field from the response
     // return the user response
-const registerUser = asyncHandler( async (req, res) => {
-   
-    
+
+    // -*-*-*-*--*-*-*-*--*-*-*-*-*-*-*-*--*-*-*-*--*-*-*-*--*-*-*-*-
+
     // get the data from frontend -> in body or url 
     // this case from body
 
@@ -131,4 +161,135 @@ const registerUser = asyncHandler( async (req, res) => {
     )
 })
 
-export {registerUser}
+
+// login user:
+const loginUser = asyncHandler( async (req, res) => {
+    // algorithms:
+    // get the data from the body
+    // username based or email based login?
+
+    // check for user
+    // if found, check the correctness of password  
+    // if correct, generate access and refresh tokens
+    // send these tokens as cookies 
+    // give response
+
+
+    // get the data from body:
+    const { username, email, password } = req.body
+
+    if (!username || !email) {
+        throw new ApiError(400, "Username or email is needed")
+    }
+
+    // find the user in the db:
+    // use findOne -> returns the first entry found in the db
+    const user = await User.findOne(
+        {
+            $or: [ { username, email }]
+        }
+    )
+
+    if (!user) {
+        throw new ApiError(404, "user do not exist")
+    }
+
+    // check for the password: 
+    // user model -> func isPasswordCorrect -> call it
+    // provide the pw gotten from body
+
+    const isPasswordCorrect = user.isPasswordCorrect(password)
+
+    // wrong password
+    if(!isPasswordCorrect) { 
+        throw new ApiError(401, "Incorrect password")
+    }
+
+    // generate access and refresh token:
+    const { accessToken, refreshToken } = await generateAccessAndrefreshTokens(user._id);
+
+    // the current user instance do not have refreshToken in it because
+    // it was defined before the generate.... method call
+    // so get the correct user again, run db query
+
+    const loggedInUser = await User.findById(user._id).select(
+        "-password", "-refreshToken"
+    )
+
+    // cookie options config: 
+
+    // bydefault cookie is modifiable by anybody in frontend
+    // doing this it will only be modifiable from the server side
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res.status(
+        200
+    ).cookie(
+        "accessToken", accessToken, options
+    ).cookie(
+        "refreshToken", refreshToken, options
+    ).json(
+        new ApiResponse(
+            200,
+            // sending the access token and refresh token
+            // because user may want to store it locally
+            // depends on the requirement to whether send or not
+            {
+                user: loggedInUser,
+                accessToken,
+                refreshToken
+            },
+            "Successfully logged in"
+        )
+    )
+
+})
+
+
+//logout user:
+const logoutUser = asyncHandler(async (req, res) => {
+
+    // remove the cookies
+    // remove the values in accessToken and refreshToken field
+
+    // where is the user detail for currently logged in user?
+    // for that we write auth middleware:
+
+    const userId = req.user._id
+
+    // remove the refresh token from the db
+    await User.findByIdAndUpdate(
+        userId, 
+        {
+            $set: {
+                refreshToken: undefined
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refrestToken", options)
+    .json(new ApiResponse(
+        200,
+        {},
+        "logged out successfully"
+    ))
+})
+export {
+    registerUser,
+    loginUser,
+    logoutUser
+}

@@ -1,6 +1,7 @@
-import { registerUser } from "../controllers/user.controller.js";
+import { loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js"
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
@@ -25,6 +26,16 @@ router.route("/register").post(
     ]),
     registerUser
 )
+
+// login route: 
+router.route("/login").post(loginUser)
+
+
+// secured routes: 
+// inject the middleware here before the controller method
+// inside verifyJWT there is a next() 
+// -> next means verifyJWT is done and now run logoutUser
+router.route("/logout").post(verifyJWT, logoutUser)
 // app url: http://localhost:8000/api/v1/users/register
 
 export default router;  
