@@ -1,5 +1,5 @@
 import {v2 as cloudinary} from 'cloudinary';
-import fs, { unlink } from "fs"
+import fs from "fs"
 
 
 // cloudinary configuration:
@@ -24,10 +24,10 @@ const uploadOnCloud = async (localPath) => {
             resource_type: "auto"
         })
         // file uploaded successfully:
-        // console.log("File uploaded successfully on cloud ", response.url);
-
-        // remove the uploaded file from the local path on success
+        console.log("File uploaded successfully on cloud ", response.url);
         fs.unlinkSync(localPath)
+        // remove the uploaded file from the local path on success
+        // fs.unlinkSync(localPath)
 
         return response
 

@@ -22,6 +22,7 @@ const registerUser = asyncHandler( async (req, res) => {
     // this case from body
 
     const { username, email, password } = req.body
+    console.log(req.body);
     console.log(`email: ${email}`);
 
     // validation check if these fileds are empty or not
@@ -40,7 +41,7 @@ const registerUser = asyncHandler( async (req, res) => {
     // we check if username or email already exist
     // query -> .findOne 
     // to check if email already exist or uname already exist -> use '$' sign -> operator
-
+    // talk with db, so use async
 
     const existedUser = await User.findOne({
         $or: [{ username }, { email }]
@@ -57,9 +58,29 @@ const registerUser = asyncHandler( async (req, res) => {
     // get the path which is there locally from the multer
 
     console.log(req.files)
-    const avatarLocalPath = req.files?.avatar[0]?.path
+    // const avatarLocalPath = req.files?.avatar[0]?.path
 
-    const dpLocalPath = req.files?.dp[0]?.path
+    let avatarLocalPath;
+
+    if(req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0) {
+        avatarLocalPath = req.files.avatar[0]?.path
+    } 
+
+    // doing this way we would not know if the req has a files property
+    // and has an array named dp with elements in it. 
+    // so do a simpler way 
+    // const dpLocalPath = req.files?.dp[0]?.path
+
+    let dpLocalPath;
+
+    if (
+        req.files 
+        && Array.isArray(req.files.dp)
+        && req.files.dp.length > 0
+    ) {
+        dpLocalPath = req.files.dp[0].path
+    }
+    
 
     if(!avatarLocalPath) {
         throw new ApiError(400, "Avatar is must")
@@ -81,7 +102,7 @@ const registerUser = asyncHandler( async (req, res) => {
         username: username.toLowerCase(),
         email,
         avatar: avatar.url,
-        dp: dp.url || "" ,   // if no dp is given empty string is passed
+        dp: dp?.url || "" ,   // if no dp is given empty string is passed
         password,
     })
 
