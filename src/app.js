@@ -40,6 +40,6 @@ import userRouter from './routes/user.route.js'
 // instead use app.use -> introducing a middleware
 // whenever url/users is hit -> the control is sent to userRouter -->> and we write code in user.route.js file
 // best practice specify the api and its version as well
-app.use("api/v1/users", userRouter)
+app.use("/api/v1/users", userRouter)
 
 export { app }

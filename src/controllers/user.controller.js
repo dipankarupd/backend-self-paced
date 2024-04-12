@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/apiError.js"
 import { User } from "../models/user.model.js"
 import { uploadOnCloud } from "../utils/cloudnary.service.js"
-import { ApiResopnse } from "../utils/apiResponse.js"
+import { ApiResponse } from "../utils/apiResponse.js"
 
 
 // steps to register:
@@ -42,7 +42,7 @@ const registerUser = asyncHandler( async (req, res) => {
     // to check if email already exist or uname already exist -> use '$' sign -> operator
 
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
 
@@ -106,7 +106,7 @@ const registerUser = asyncHandler( async (req, res) => {
 
     // send the response: 
     return res.status(201).json(
-        new ApiResopnse(201, "User registered successfully", createdUser)
+        new ApiResponse(201, "User registered successfully", createdUser)
     )
 })
 
