@@ -178,7 +178,7 @@ const loginUser = asyncHandler( async (req, res) => {
     // get the data from body:
     const { username, email, password } = req.body
 
-    if (!username || !email) {
+    if (!username && !email) {
         throw new ApiError(400, "Username or email is needed")
     }
 
@@ -186,7 +186,7 @@ const loginUser = asyncHandler( async (req, res) => {
     // use findOne -> returns the first entry found in the db
     const user = await User.findOne(
         {
-            $or: [ { username, email }]
+            $or: [ { username } , { email }]
         }
     )
 
@@ -213,7 +213,7 @@ const loginUser = asyncHandler( async (req, res) => {
     // so get the correct user again, run db query
 
     const loggedInUser = await User.findById(user._id).select(
-        "-password", "-refreshToken"
+        "-password -refreshToken"
     )
 
     // cookie options config: 
@@ -281,7 +281,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .clearCookie("accessToken", options)
-    .clearCookie("refrestToken", options)
+    .clearCookie("refreshToken", options)
     .json(new ApiResponse(
         200,
         {},

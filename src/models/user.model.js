@@ -90,7 +90,7 @@ userSchema.methods.generateAccessToken = function () {
     // use jwt.sign function 
     // jwt.sign(payload object, secret access token key, expiry in object)
 
-    jwt.sign(
+    return jwt.sign(
         {
             _id: this._id,
             email: this.email,
@@ -105,7 +105,7 @@ userSchema.methods.generateAccessToken = function () {
 }
 
 userSchema.methods.generateRefreshToken = function () {
-    jwt.sign(
+    return jwt.sign(
         {
             // refresh token payload refreshes in quick succession so have less payload
             _id: this._id,
