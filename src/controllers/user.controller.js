@@ -3,6 +3,7 @@ import {ApiError} from "../utils/apiError.js"
 import { User } from "../models/user.model.js"
 import { uploadOnCloud } from "../utils/cloudnary.service.js"
 import { ApiResponse } from "../utils/apiResponse.js"
+import jwt from "jsonwebtoken"
 
 
 const generateAccessAndrefreshTokens = async (userId) => {
@@ -288,8 +289,67 @@ const logoutUser = asyncHandler(async (req, res) => {
         "logged out successfully"
     ))
 })
+
+// relogin if session expires:
+const renewToken = asyncHandler(async (req, res) => {
+
+    const incomingToken = req.cookie.refreshToken || req.body.refreshToken
+
+    if(!incomingToken) {
+        throw new ApiError(401, "unauthorized request")
+    }
+
+    // if there is token coming from the user via cookies, 
+    // we must checck if that is same as the one saved in the db
+    // the token coming from cookies is encrypted and the one saved in db is raw
+    // we must verify that both are same
+
+    try {
+        const decodedTokekn = jwt.verify(
+            incomingToken,
+            process.env.REFRESH_TOKEN_SECRETS
+        )
+    
+        const user = await User.findById(decodedTokekn?._id)
+    
+        if(!user) {
+            throw new ApiError(401, "invalid refresh token")
+        }
+    
+        // check if the incoming token is saved in the db:
+    
+        if(incomingToken !== user?.refreshToken) {
+            throw new ApiError(401, "token expired")
+        }
+    
+        // if all goes well, generate new access and refresh tokens
+    
+        const { accessToken, newRefreshToken } = await generateAccessAndrefreshTokens(user._id)
+    
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+    
+        return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", newRefreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                {accessToken, newRefreshToken},
+                "access token refreshed"
+            )
+        )
+    } catch (error) {
+        throw new ApiError(401, error?.message)
+    }
+
+})
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    renewToken
 }
