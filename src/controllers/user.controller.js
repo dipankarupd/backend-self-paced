@@ -354,7 +354,7 @@ const changePassword = asyncHandler(async(req, res) => {
 
     const {oldPassword, newPassword} = req.body
 
-    const userId = req.user?.id
+    const userId = req.user?._id
 
     const user = await User.findById(userId)
 
