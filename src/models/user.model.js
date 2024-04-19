@@ -73,7 +73,8 @@ userSchema.pre("save", async function (next) {
     // otherwise: 
 
     // encrypt the current password and hashing is done for 10 rounds/iterations
-    this.password = bcrypt.hash(this.password, 10)
+    // asynchronus func so use await
+    this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
