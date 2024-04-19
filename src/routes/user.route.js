@@ -43,7 +43,7 @@ router.route("/change-password").post(verifyJWT, changePassword)
 
 router.route("/current-user").get(verifyJWT,getCurrentUser)
 
-router.route("/update-Avatar").patch(
+router.route("/update-avatar").patch(
     verifyJWT, 
     upload.single("avatar"),
     updateAvatar
