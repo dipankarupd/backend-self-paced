@@ -377,6 +377,7 @@ const changePassword = asyncHandler(async(req, res) => {
     ))
 })
 
+// get the current logged in user
 const getCurrentUser = asyncHandler(async(req, res) => {
 
     // if the user is logged in
@@ -392,6 +393,42 @@ const getCurrentUser = asyncHandler(async(req, res) => {
         currentUser
     ))
 })
+
+
+// update the user detail:
+const updateUserDetail = asyncHandler( async (req, res) => {
+
+    // best practice is to hit different endpoint
+    // to update the files
+    const { username, email } = req.body
+
+    if(!username || !email) {
+        throw new ApiError(400, "No updating data provided")
+    }
+
+    const user = User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                username: username,
+                email: email
+            }
+        },
+        {
+            // return the new updated value to the user var defined
+            new: true
+        }
+    ).select("-password -refreshToken")
+
+    return res
+    .status(200)
+    .json(new ApiResponse(
+        200,
+        "Details updated successfully",
+        user
+    ))
+})
+
 export {
     registerUser,
     loginUser,
