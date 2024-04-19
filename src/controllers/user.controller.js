@@ -429,6 +429,76 @@ const updateUserDetail = asyncHandler( async (req, res) => {
     ))
 })
 
+// update the avatar:
+const updateAvatar = asyncHandler(async (req, res) => {
+    
+    // get the avatar image path
+    const localPath = req.file?.path
+
+    if(!localPath) {
+        throw new ApiError(400, "missing file")
+    }
+
+    const avatar = await uploadOnCloud(localPath)
+
+    if(!avatar.url) {
+        throw new ApiError(400, "error while uploading on cloud")
+    }
+
+    // update the avatar on the database: 
+
+    const user = User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {new: true}
+    ).select("-password -refreshToken")
+
+    return res.status(200)
+    .json(new ApiResponse(
+        200,
+        "Avatar uploaded successfully",
+        user
+    ))
+})
+
+const updateDp = asyncHandler(async (req, res) => {
+     // get the dp image path
+     const localPath = req.file?.path
+
+     if(!localPath) {
+         throw new ApiError(400, "missing file")
+     }
+ 
+     const dp = await uploadOnCloud(localPath)
+ 
+    //  if(!dp.url) {
+    //      throw new ApiError(400, "error while uploading on cloud")
+    //  }
+ 
+     // update the avatar on the database: 
+ 
+     const user = User.findByIdAndUpdate(
+         req.user?._id,
+         {
+             $set: {
+                 dp: dp ? dp.url : ""
+             }
+         },
+         {new: true}
+     ).select("-password -refreshToken")
+ 
+     return res.status(200)
+     .json(new ApiResponse(
+         200,
+         "Dp updated successfully",
+         user
+     ))
+})
+
 export {
     registerUser,
     loginUser,
@@ -436,4 +506,7 @@ export {
     renewToken,
     changePassword,
     getCurrentUser,
+    updateAvatar,
+    updateDp,
+    updateUserDetail
 }

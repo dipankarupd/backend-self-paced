@@ -1,4 +1,4 @@
-import { loginUser, logoutUser, registerUser, renewToken } from "../controllers/user.controller.js";
+import { changePassword, getCurrentUser, loginUser, logoutUser, registerUser, renewToken, updateAvatar, updateDp, updateUserDetail } from "../controllers/user.controller.js";
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -37,6 +37,28 @@ router.route("/login").post(loginUser)
 // -> next means verifyJWT is done and now run logoutUser
 router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/refreshtoken").post(renewToken)
+
+
+router.route("/change-password").post(verifyJWT, changePassword)
+
+router.route("/current-user").get(verifyJWT,getCurrentUser)
+
+router.route("/update-Avatar").patch(
+    verifyJWT, 
+    upload.single("avatar"),
+    updateAvatar
+)
+
+router.route("/update-dp").patch(
+    verifyJWT, 
+    upload.single("dp"),
+    updateDp
+)
+
+router.route("/update-detail").patch(
+    verifyJWT,
+    updateUserDetail
+)
 // app url: http://localhost:8000/api/v1/users/register
 
 export default router;  
