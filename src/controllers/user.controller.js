@@ -376,9 +376,27 @@ const changePassword = asyncHandler(async(req, res) => {
         {}
     ))
 })
+
+const getCurrentUser = asyncHandler(async(req, res) => {
+
+    // if the user is logged in
+    // we can get the current user from the middleware
+    // which we created
+
+    const currentUser = req.user
+    return res
+    .status(200)
+    .json(new ApiResponse(
+        200,
+        "current user fetched successfully",
+        currentUser
+    ))
+})
 export {
     registerUser,
     loginUser,
     logoutUser,
-    renewToken
+    renewToken,
+    changePassword,
+    getCurrentUser,
 }
