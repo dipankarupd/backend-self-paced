@@ -499,6 +499,112 @@ const updateDp = asyncHandler(async (req, res) => {
      ))
 })
 
+const getChannelDetail = asyncHandler(async (req, res) => {
+
+    // get the channel name -> username from the parameter:
+    const { username } = req.params
+
+    // check if the username exist or not: 
+    if(!username.trim()) {
+        throw new ApiError(400, "channel does not exist")
+    }
+
+    // use aggregation pipeline to match the channel and get
+    // subscribers count and the subscribed count:
+
+    const channel = await Userser.aggregate([
+        // pipeline 1:
+        // get the user document with the given username
+        {
+            $match: {
+                username: username?.toLowerCase()
+            }
+        },
+
+        // pipeline 2:
+        // get all subscribers of this channel
+        // from all documents, look for documents where channel -> user
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+
+        // pipeline 3:
+        // get all the channels this user has subscribed to
+        // from all documents look at documents where subscribe -> user
+
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        }, 
+
+        // pipeline 4: 
+        // add newer fields to the documents:
+
+        {
+            $addFields: {
+                subscribersCount: {
+                    $size: "$subscribers"
+                },
+                subscribedToCount: {
+                    $size: "$subscribedTo"
+                },
+                //check if the current user is subscribed to this channel or not
+                isSubscribed: {
+                    $cond: {
+                        if: {
+                            $in: [req.user?._id, "$subscribers.subscriber"]
+                        },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+
+        // pipeline 5: 
+        // return all the entities which you want provide:
+
+        {
+            $project: {
+                username: 1,
+                email: 1,
+                subscribersCount: 1,
+                subscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                dp: 1,
+            }
+        }
+    ])
+
+    // the result of the aggregation pipeline comes in the form of array
+    // here in this case, we only have one channel as result -> arr[0] idx
+    // check if this is present or not:
+
+    if(!channel?.length) {
+        throw new ApiError(400, "channel does not exist")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            "channel fetched successfully",
+            channel[0]  // give the channel detail object which is at arr[0]
+        )
+    )
+})
+
 export {
     registerUser,
     loginUser,
@@ -508,5 +614,6 @@ export {
     getCurrentUser,
     updateAvatar,
     updateDp,
-    updateUserDetail
+    updateUserDetail,
+    getChannelDetail,
 }
