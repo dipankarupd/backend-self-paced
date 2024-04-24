@@ -1,4 +1,16 @@
-import { changePassword, getChannelDetail, getCurrentUser, getWatchHistory, loginUser, logoutUser, registerUser, renewToken, updateAvatar, updateDp, updateUserDetail } from "../controllers/user.controller.js";
+import { 
+    changePassword, 
+    getChannelDetail, 
+    getCurrentUser, 
+    getWatchHistory, 
+    loginUser, 
+    logoutUser, 
+    registerUser, 
+    renewToken, 
+    updateAvatar, 
+    updateDp, 
+    updateUserDetail 
+} from "../controllers/user.controller.js";
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
