@@ -29,6 +29,7 @@ const uploadOnCloud = async (localPath) => {
         // remove the uploaded file from the local path on success
         // fs.unlinkSync(localPath)
 
+        console.log(`resp: ${response}`);
         return response
 
     }

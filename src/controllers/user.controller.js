@@ -200,7 +200,7 @@ const loginUser = asyncHandler( async (req, res) => {
     // user model -> func isPasswordCorrect -> call it
     // provide the pw gotten from body
 
-    const isPasswordCorrect = user.isPasswordCorrect(password)
+    const isPasswordCorrect = await user.isPasswordCorrect(password)
 
     // wrong password
     if(!isPasswordCorrect) { 
@@ -358,10 +358,11 @@ const changePassword = asyncHandler(async(req, res) => {
     const userId = req.user?._id
 
     const user = await User.findById(userId)
-
+    
     // check for if the old password is correct: 
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
+    
     if (!isPasswordCorrect) {
         throw new ApiError(400, "Invalid old password")
     }
@@ -435,20 +436,21 @@ const updateAvatar = asyncHandler(async (req, res) => {
     
     // get the avatar image path
     const localPath = req.file?.path
+    console.log(localPath);
 
     if(!localPath) {
         throw new ApiError(400, "missing file")
     }
 
     const avatar = await uploadOnCloud(localPath)
-
+    console.log(`Avatar: ${avatar}`);
     if(!avatar.url) {
         throw new ApiError(400, "error while uploading on cloud")
     }
 
     // update the avatar on the database: 
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
@@ -470,6 +472,7 @@ const updateDp = asyncHandler(async (req, res) => {
      // get the dp image path
      const localPath = req.file?.path
 
+     console.log(`localpath: ${localPath}`);
      if(!localPath) {
          throw new ApiError(400, "missing file")
      }
@@ -482,7 +485,7 @@ const updateDp = asyncHandler(async (req, res) => {
  
      // update the avatar on the database: 
  
-     const user = User.findByIdAndUpdate(
+     const user = await User.findByIdAndUpdate(
          req.user?._id,
          {
              $set: {
