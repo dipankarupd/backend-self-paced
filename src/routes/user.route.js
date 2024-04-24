@@ -1,4 +1,4 @@
-import { changePassword, getCurrentUser, loginUser, logoutUser, registerUser, renewToken, updateAvatar, updateDp, updateUserDetail } from "../controllers/user.controller.js";
+import { changePassword, getChannelDetail, getCurrentUser, getWatchHistory, loginUser, logoutUser, registerUser, renewToken, updateAvatar, updateDp, updateUserDetail } from "../controllers/user.controller.js";
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -59,6 +59,12 @@ router.route("/update-detail").patch(
     verifyJWT,
     updateUserDetail
 )
+
+// route to get the channel detail: 
+router.route("/channel/:username").get(verifyJWT, getChannelDetail)
+
+router.route("/history").get(verifyJWT, getWatchHistory)
+
 // app url: http://localhost:8000/api/v1/users/register
 
 export default router;  

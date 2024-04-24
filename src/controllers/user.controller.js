@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js"
 import { uploadOnCloud } from "../utils/cloudnary.service.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 
 const generateAccessAndrefreshTokens = async (userId) => {
@@ -605,6 +606,101 @@ const getChannelDetail = asyncHandler(async (req, res) => {
     )
 })
 
+const getWatchHistory = asyncHandler(async (req, res) => {
+
+    // look at the model from the link
+    // use aggregation pipeline:
+   
+    const user = await User.aggregate(
+        [
+            // pipeline 1:
+            // get the current user -> match
+            {
+                // important:
+                // what we get id from the user._id 
+                // is in the form of string
+                // mongoose directly converts that string
+                // to ObjectId of mongodb,
+                // aggregation function implemented directly
+                // without the intervention of mongoose
+                // so direct use of req.user._id will lead
+                // to error
+                $match: {
+                    _id: new mongoose.Types.ObjectId(req.user._id)
+                }
+            },
+
+            // pipeline 2:
+            // lookup for the watch history field
+            // in the current user data
+            {
+
+                $lookup: {
+                    from: "videos",
+                    localField: "watchHistory",
+                    foreignField: "_id",
+                    as: "watchHistory",
+
+                    // got all the videos present in the
+                    // watch history
+                    
+                    // we also need the owner field in videos
+                    // for getting that, use lookup again:
+                    // we can use sub-pipeline here
+
+                    // sub pipeline with pipeline field:
+                    pipeline: [
+                        // we are in videos
+                        // sub-pipeline:1 
+                        // look for the user
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "owner",
+
+                                // create another pipeline
+                                // to remove the unwanted field
+
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            username: 1,
+                                            avatar: 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            $addFields: {
+                                owner: {
+                                    $first: "owner"
+                                }
+                            }
+                        }
+
+                    ]
+                }
+
+                
+            }
+        ]
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            "watch history fetched successfully",
+            user[0].watchHistory
+        )
+    )
+
+})
+
 export {
     registerUser,
     loginUser,
@@ -616,4 +712,5 @@ export {
     updateDp,
     updateUserDetail,
     getChannelDetail,
+    getWatchHistory
 }
