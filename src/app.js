@@ -33,6 +33,7 @@ app.use(cookieParser())
 
 // routes importing:
 import userRouter from './routes/user.route.js'
+import tweetRouter from './routes/tweet.route.js'
 
 
 // routes declaration:
