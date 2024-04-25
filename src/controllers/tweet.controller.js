@@ -6,7 +6,7 @@ import {Tweet} from "../models/tweet.model.js"
 
 
 // create new tweet
-const createTweet = new asyncHandler(async(req, res) => {
+const createTweet = asyncHandler(async(req, res) => {
 
     // get the content
     // add the tweet in the database
@@ -41,7 +41,7 @@ const createTweet = new asyncHandler(async(req, res) => {
 })
 
 // delete a tweet
-const deleteTweet = new asyncHandler(async(req, res) => {
+const deleteTweet = asyncHandler(async(req, res) => {
 
     const { tweetId } = req.params
 
@@ -80,7 +80,7 @@ const deleteTweet = new asyncHandler(async(req, res) => {
 })
 
 // update a tweet
-const updateTweet = new asyncHandler(async(req, res) => {
+const updateTweet = asyncHandler(async(req, res) => {
     // get the tweet id from params
     const {tweetId} = req.params
     const {content} = req.body
@@ -125,7 +125,7 @@ const updateTweet = new asyncHandler(async(req, res) => {
     ))
 })
 
-const getUserTweets = new asyncHandler(async(req, res) => {
+const getUserTweets = asyncHandler(async(req, res) => {
 
     const {userId} = req.params
 

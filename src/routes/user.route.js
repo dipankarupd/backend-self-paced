@@ -49,8 +49,6 @@ router.route("/login").post(loginUser)
 // -> next means verifyJWT is done and now run logoutUser
 router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/refreshtoken").post(renewToken)
-
-
 router.route("/change-password").post(verifyJWT, changePassword)
 
 router.route("/current-user").get(verifyJWT,getCurrentUser)
