@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
-import mongoose from "mongoose"
+import mongoose, { isValidObjectId } from "mongoose"
 import {Tweet} from "../models/tweet.model.js"
 
 
@@ -45,8 +45,11 @@ const deleteTweet = asyncHandler(async(req, res) => {
 
     const { tweetId } = req.params
 
+    console.log(`tweet id: ${tweetId}`);
+    
+
     // check for availability of tweetId
-    if(!tweetId) {
+    if(!isValidObjectId(tweetId)) {
         throw new ApiError(400, "Tweet Id missing")
     }
 
@@ -58,8 +61,8 @@ const deleteTweet = asyncHandler(async(req, res) => {
     }
 
     // check if the current user is the owner of the tweet
-
-    if(tweet?.owner.toString() !== req.user?._id) {
+    if(tweet?.owner.toString() !== req.user?._id.toString()) {
+        
         // user does not match
         // other user cannot delete the tweet
         throw new ApiError(400, "Only owner can delete")
@@ -98,7 +101,7 @@ const updateTweet = asyncHandler(async(req, res) => {
 
     // check if the current user is owner of the tweet
     // can only be updated by the owner
-    if(!tweet?.owner.toString() !== req.user?._id) {
+    if(tweet?.owner.toString() !== req.user?._id.toString()) {
         throw new ApiError(400, "Only owner can update")
     }
 
@@ -191,10 +194,10 @@ const getUserTweets = asyncHandler(async(req, res) => {
                 },
 
                 ownerDetail: {
-                    $first: "ownerDetail"
+                    $first: "$ownerDetail"
                 },
                 isLiked: {
-                    $condn: {
+                    $cond: {
                         if: { $in: [req.user?._id, "$likeDetails.likedBy"]},
                         then: true,
                         else: false
