@@ -34,6 +34,7 @@ app.use(cookieParser())
 // routes importing:
 import userRouter from './routes/user.route.js'
 
+
 // routes declaration:
 
 // because controller and routes are in different place, we do not use app.get / app.post here
@@ -41,5 +42,6 @@ import userRouter from './routes/user.route.js'
 // whenever url/users is hit -> the control is sent to userRouter -->> and we write code in user.route.js file
 // best practice specify the api and its version as well
 app.use("/api/v1/users", userRouter)
+app.use("/api/v1/tweets", tweetRouter)
 
 export { app }
