@@ -82,7 +82,8 @@ const deleteTweet = new asyncHandler(async(req, res) => {
 // update a tweet
 const updateTweet = new asyncHandler(async(req, res) => {
     // get the tweet id from params
-    const {tweetId, content} = req.params
+    const {tweetId} = req.params
+    const {content} = req.body
 
     if(!tweetId) {
         throw new ApiError(400, "missing params")
